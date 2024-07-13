@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"monkey/ast"
 	"monkey/lexer"
 	"testing"
@@ -21,9 +20,6 @@ let foobar = 838383;
 	if program == nil {
 		t.Fatal("ParseProgram() returned nil")
 	}
-
-	fmt.Println(program.Statements)
-
 	if len(program.Statements) != 3 {
 		t.Fatalf(
 			"program.Statements does not contain 3 statements. got=%d",
@@ -44,6 +40,44 @@ let foobar = 838383;
 		if !testLetStatement(t, stmt, tt.expIdent) {
 			return
 		}
+	}
+}
+
+func TestReturnStatements(t *testing.T) {
+	input := `
+return 5;
+return 10;
+return 993322;
+`
+	l := lexer.New(input)
+	p := New(l)
+
+	program := p.parseProgram()
+	checkParserErrors(t, p)
+	if program == nil {
+		t.Fatal("ParseProgram() returned nil")
+	}
+	if len(program.Statements) != 3 {
+		t.Fatalf(
+			"program.Statements does not contain 3 statements. got=%d",
+			len(program.Statements),
+		)
+	}
+
+	for _, s := range program.Statements {
+		rs, ok := s.(*ast.ReturnStatement)
+		if !ok {
+			t.Errorf("s not *ast.ReturnStatement. got=%T", s)
+			continue
+		}
+
+		if rs.TokenLiteral() != "return" {
+			t.Errorf(
+				"returnStmt.TokenLiteral not 'return', got %q",
+				rs.TokenLiteral(),
+			)
+		}
+
 	}
 }
 
